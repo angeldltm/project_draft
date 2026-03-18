@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Calculadora Precio m²</title>
+</head>
+<body>
+
+<h2>Calcula el precio por metro cuadrado</h2>
+
+<label>Dirección:</label><br>
+<input type="text" id="direccion"><br><br>
+
+<label>Metros cuadrados:</label><br>
+<input type="number" id="metros"><br><br>
+
+<label>Precio (€):</label><br>
+<input type="number" id="precio"><br><br>
+
+<button onclick="calcular()">Calcular</button>
+
+<h3 id="resultado"></h3>
+
+<script>
+function calcular() {
+  let metros = document.getElementById("metros").value;
+  let precio = document.getElementById("precio").value;
+
+  let resultado = precio / metros;
+
+  document.getElementById("resultado").innerText =
+    "Precio por m²: " + resultado.toFixed(2) + " €/m²";
+}
+</script>
+
+</body>
+</html>
