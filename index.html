@@ -3,54 +3,106 @@
 <head>
   <title>Calculadora Precio m²</title>
   <style>
-body {
-  font-family: Arial, sans-serif;
-  max-width: 500px;
-  margin: 50px auto;
-  text-align: center;
-}
-input {
-  padding: 8px;
-  width: 80%;
-  margin-bottom: 15px;
-}
-button {
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
-}
-h3 {
-  color: #2c3e50;
-}
-</style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 500px;
+      margin: 50px auto;
+      text-align: center;
+    }
+    input {
+      padding: 8px;
+      width: 80%;
+      margin-bottom: 15px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    h3 {
+      color: #2c3e50;
+      white-space: pre-line; /* Para saltos de línea */
+    }
+  </style>
 </head>
 <body>
 
 <h2>Calcula el precio por metro cuadrado</h2>
 
 <label>Dirección:</label><br>
-<input type="text" id="direccion"><br><br>
+<input type="text" id="direccion" placeholder="Ej: Madrid Centro"><br>
 
 <label>Metros cuadrados:</label><br>
-<input type="number" id="metros"><br><br>
+<input type="number" id="metros" placeholder="Ej: 100"><br>
 
 <label>Precio (€):</label><br>
-<input type="number" id="precio"><br><br>
+<input type="number" id="precio" placeholder="Ej: 250000"><br><br>
 
 <button onclick="calcular()">Calcular</button>
 
 <h3 id="resultado"></h3>
 
 <script>
-function calcular() {
-  let metros = document.getElementById("metros").value;
-  let precio = document.getElementById("precio").value;
+  // Precios de ejemplo por zona
+  const preciosZona = {
+    "Madrid Centro": 22,
+    "Barcelona Eixample": 19,
+    "Valencia Ciutat Vella": 15,
+    "Sevilla Centro": 13
+  };
 
-  let resultado = precio / metros;
+  // Función para obtener zona aproximada con OpenStreetMap
+  async function obtenerZona(direccion) {
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(direccion)}`;
+    const response = await fetch(url);
+    const data = await response.json();
+    if (data.length > 0) {
+      const displayName = data[0].display_name;
+      const zona = displayName.split(",")[0].trim();
+      return zona;
+    } else {
+      return null;
+    }
+  }
 
-  document.getElementById("resultado").innerText =
-    "Precio por m²: " + resultado.toFixed(2) + " €/m²";
-}
+  // Función para comparar precios
+  function compararPrecio(precioUsuario, precioZona) {
+    const diferencia = ((precioUsuario - precioZona) / precioZona) * 100;
+    return diferencia.toFixed(2);
+  }
+
+  // Función principal
+  async function calcular() {
+    const direccion = document.getElementById("direccion").value;
+    const metros = parseFloat(document.getElementById("metros").value);
+    const precio = parseFloat(document.getElementById("precio").value);
+
+    if (!direccion || !metros || metros <= 0 || !precio || precio <= 0) {
+      document.getElementById("resultado").innerText = "Introduce valores válidos";
+      return;
+    }
+
+    const precioUsuario = precio / metros;
+
+    const zona = await obtenerZona(direccion);
+    if (!zona) {
+      document.getElementById("resultado").innerText = "No se pudo localizar la dirección";
+      return;
+    }
+
+    const precioMedio = preciosZona[zona] || null;
+
+    let mensaje = `Tu precio: ${precioUsuario.toFixed(2)} €/m²\nZona aproximada: ${zona}`;
+
+    if (precioMedio) {
+      const diferencia = compararPrecio(precioUsuario, precioMedio);
+      mensaje += `\nPrecio medio zona: ${precioMedio} €/m²\nDiferencia: ${diferencia}%`;
+    } else {
+      mensaje += `\nNo tenemos datos de precio para esta zona`;
+    }
+
+    document.getElementById("resultado").innerText = mensaje;
+  }
 </script>
 
 </body>
