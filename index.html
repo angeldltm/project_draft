@@ -52,17 +52,16 @@
   };
 
   // Función para obtener zona aproximada con OpenStreetMap
-  async function obtenerZona(direccion) {
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(direccion)}`;
-    const response = await fetch(url);
-    const data = await response.json();
-    if (data.length > 0) {
-      const displayName = data[0].display_name;
-      const zona = displayName.split(",")[0].trim();
-      return zona;
-    } else {
-      return null;
-    }
+  function obtenerZonaSimple(direccion) {
+  direccion = direccion.toLowerCase();
+
+  if (direccion.includes("madrid")) return "Madrid Centro";
+  if (direccion.includes("barcelona")) return "Barcelona Eixample";
+  if (direccion.includes("valencia")) return "Valencia Ciutat Vella";
+  if (direccion.includes("sevilla")) return "Sevilla Centro";
+
+  return null; // si no coincide
+}
   }
 
   // Función para comparar precios
@@ -84,7 +83,7 @@
 
     const precioUsuario = precio / metros;
 
-    const zona = await obtenerZona(direccion);
+    const zona = obtenerZonaSimple(direccion);
     if (!zona) {
       document.getElementById("resultado").innerText = "No se pudo localizar la dirección";
       return;
