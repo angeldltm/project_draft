@@ -30,7 +30,7 @@
 <h2>Calcula el precio por metro cuadrado</h2>
 
 <label>Dirección:</label><br>
-<input type="text" id="direccion" placeholder="Ej: Madrid Centro"><br>
+<input type="text" id="direccion" placeholder="Ej: Madrid"><br>
 
 <label>Metros cuadrados:</label><br>
 <input type="number" id="metros" placeholder="Ej: 100"><br>
@@ -51,17 +51,16 @@
     "Sevilla Centro": 13
   };
 
-  // Función para obtener zona aproximada con OpenStreetMap
+  // Función simple para detectar zona por palabras clave
   function obtenerZonaSimple(direccion) {
-  direccion = direccion.toLowerCase();
+    direccion = direccion.toLowerCase();
 
-  if (direccion.includes("madrid")) return "Madrid Centro";
-  if (direccion.includes("barcelona")) return "Barcelona Eixample";
-  if (direccion.includes("valencia")) return "Valencia Ciutat Vella";
-  if (direccion.includes("sevilla")) return "Sevilla Centro";
+    if (direccion.includes("madrid")) return "Madrid Centro";
+    if (direccion.includes("barcelona")) return "Barcelona Eixample";
+    if (direccion.includes("valencia")) return "Valencia Ciutat Vella";
+    if (direccion.includes("sevilla")) return "Sevilla Centro";
 
-  return null; // si no coincide
-}
+    return null; // si no coincide
   }
 
   // Función para comparar precios
@@ -71,7 +70,7 @@
   }
 
   // Función principal
-  async function calcular() {
+  function calcular() {
     const direccion = document.getElementById("direccion").value;
     const metros = parseFloat(document.getElementById("metros").value);
     const precio = parseFloat(document.getElementById("precio").value);
@@ -85,22 +84,18 @@
 
     const zona = obtenerZonaSimple(direccion);
     if (!zona) {
-      document.getElementById("resultado").innerText = "No se pudo localizar la dirección";
+      document.getElementById("resultado").innerText = "No tenemos datos para esta zona";
       return;
     }
 
-    const precioMedio = preciosZona[zona] || null;
+    const precioMedio = preciosZona[zona];
+    const diferencia = compararPrecio(precioUsuario, precioMedio);
 
-    let mensaje = `Tu precio: ${precioUsuario.toFixed(2)} €/m²\nZona aproximada: ${zona}`;
-
-    if (precioMedio) {
-      const diferencia = compararPrecio(precioUsuario, precioMedio);
-      mensaje += `\nPrecio medio zona: ${precioMedio} €/m²\nDiferencia: ${diferencia}%`;
-    } else {
-      mensaje += `\nNo tenemos datos de precio para esta zona`;
-    }
-
-    document.getElementById("resultado").innerText = mensaje;
+    document.getElementById("resultado").innerText =
+      `Tu precio: ${precioUsuario.toFixed(2)} €/m²\n` +
+      `Zona aproximada: ${zona}\n` +
+      `Precio medio zona: ${precioMedio} €/m²\n` +
+      `Diferencia: ${diferencia}%`;
   }
 </script>
 
