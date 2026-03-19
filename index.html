@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Calculadora Precio m²</title>
+  <title>Calculadora Precio Vivienda</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -9,7 +9,7 @@
       margin: 50px auto;
       text-align: center;
     }
-    input {
+    input, select {
       padding: 8px;
       width: 80%;
       margin-bottom: 15px;
@@ -21,82 +21,79 @@
     }
     h3 {
       color: #2c3e50;
-      white-space: pre-line; /* Para saltos de línea */
+      white-space: pre-line;
     }
   </style>
 </head>
 <body>
 
-<h2>Calcula el precio por metro cuadrado</h2>
+<h2>Calculadora de precio por m²</h2>
 
-<label>Dirección:</label><br>
+<label>Municipio (ej: Madrid):</label><br>
 <input type="text" id="direccion" placeholder="Ej: Madrid"><br>
+
+<label>Tipo de vivienda:</label><br>
+<select id="tipo">
+  <option value="COLECTIVA">Colectiva</option>
+  <option value="UNIFAMILIAR">Unifamiliar</option>
+</select><br>
 
 <label>Metros cuadrados:</label><br>
 <input type="number" id="metros" placeholder="Ej: 100"><br>
 
 <label>Precio (€):</label><br>
-<input type="number" id="precio" placeholder="Ej: 250000"><br><br>
+<input type="number" id="precio" placeholder="Ej: 250000"><br>
 
 <button onclick="calcular()">Calcular</button>
 
 <h3 id="resultado"></h3>
 
 <script>
-  // Precios de ejemplo por zona
-  const preciosZona = {
-    "Madrid Centro": 22,
-    "Barcelona Eixample": 19,
-    "Valencia Ciutat Vella": 15,
-    "Sevilla Centro": 13
-  };
+async function calcular() {
+  const direccion = document.getElementById("direccion").value;
+  const tipo = document.getElementById("tipo").value;
+  const metros = parseFloat(document.getElementById("metros").value);
+  const precio = parseFloat(document.getElementById("precio").value);
 
-  // Función simple para detectar zona por palabras clave
-  function obtenerZonaSimple(direccion) {
-    direccion = direccion.toLowerCase();
-
-    if (direccion.includes("madrid")) return "Madrid Centro";
-    if (direccion.includes("barcelona")) return "Barcelona Eixample";
-    if (direccion.includes("valencia")) return "Valencia Ciutat Vella";
-    if (direccion.includes("sevilla")) return "Sevilla Centro";
-
-    return null; // si no coincide
+  if (!direccion || !metros || metros <= 0 || !precio || precio <= 0) {
+    document.getElementById("resultado").innerText = "Introduce datos válidos";
+    return;
   }
 
-  // Función para comparar precios
-  function compararPrecio(precioUsuario, precioZona) {
-    const diferencia = ((precioUsuario - precioZona) / precioZona) * 100;
-    return diferencia.toFixed(2);
-  }
+  // Convertimos municipio a formato del JSON
+  let municipio = direccion.trim().toUpperCase();
 
-  // Función principal
-  function calcular() {
-    const direccion = document.getElementById("direccion").value;
-    const metros = parseFloat(document.getElementById("metros").value);
-    const precio = parseFloat(document.getElementById("precio").value);
+  // Construimos código único
+  let codigo = municipio + "_" + tipo;
 
-    if (!direccion || !metros || metros <= 0 || !precio || precio <= 0) {
-      document.getElementById("resultado").innerText = "Introduce valores válidos";
+  try {
+    const response = await fetch("datos_municipios.json");
+    const data = await response.json();
+
+    const registro = data.find(x => x.codigo_unico === codigo);
+
+    if (!registro) {
+      document.getElementById("resultado").innerText =
+        "No hay datos para ese municipio/tipo";
       return;
     }
 
     const precioUsuario = precio / metros;
 
-    const zona = obtenerZonaSimple(direccion);
-    if (!zona) {
-      document.getElementById("resultado").innerText = "No tenemos datos para esta zona";
-      return;
-    }
-
-    const precioMedio = preciosZona[zona];
-    const diferencia = compararPrecio(precioUsuario, precioMedio);
+    const diferencia = ((precioUsuario - registro.precio_m2) / registro.precio_m2) * 100;
 
     document.getElementById("resultado").innerText =
       `Tu precio: ${precioUsuario.toFixed(2)} €/m²\n` +
-      `Zona aproximada: ${zona}\n` +
-      `Precio medio zona: ${precioMedio} €/m²\n` +
-      `Diferencia: ${diferencia}%`;
+      `Precio medio: ${registro.precio_m2} €/m²\n` +
+      `Diferencia: ${diferencia.toFixed(2)}%\n\n` +
+      `Superficie media: ${registro.superficie_media} m²\n` +
+      `Número de viviendas: ${registro.viviendas}`;
+
+  } catch (error) {
+    document.getElementById("resultado").innerText =
+      "Error cargando datos. Revisa el JSON.";
   }
+}
 </script>
 
 </body>
