@@ -67,7 +67,7 @@ async function calcular() {
   let codigo = municipio + "_" + tipo;
 
   try {
-    const response = await fetch("datos_municipios.json");
+    const response = await fetch("csvjson.json");
     const data = await response.json();
 
     const registro = data.find(x => x.codigo_unico === codigo);
