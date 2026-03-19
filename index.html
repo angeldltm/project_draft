@@ -23,6 +23,25 @@
       color: #2c3e50;
       white-space: pre-line;
     }
+
+    /* Barra de color */
+    .barra-container {
+      width: 80%;
+      height: 25px;
+      margin: 20px auto;
+      background: linear-gradient(to right, #2ecc71, #f1c40f, #e74c3c);
+      border-radius: 10px;
+      position: relative;
+    }
+
+    .marcador {
+      position: absolute;
+      top: -5px;
+      width: 4px;
+      height: 35px;
+      background: black;
+      transform: translateX(-50%);
+    }
   </style>
 </head>
 <body>
@@ -46,6 +65,11 @@
 
 <button onclick="calcular()">Calcular</button>
 
+<!-- Barra de desviación -->
+<div class="barra-container">
+  <div id="marcador" class="marcador"></div>
+</div>
+
 <h3 id="resultado"></h3>
 
 <script>
@@ -55,6 +79,16 @@ function normalizarTexto(texto) {
     .toUpperCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
+}
+
+// Función para mapear % a posición en la barra
+function calcularPosicion(diferencia) {
+  // Limitamos entre -50% y +50% para visualización
+  const limite = 50;
+  let valor = Math.max(-limite, Math.min(limite, diferencia));
+
+  // Convertimos a 0-100%
+  return ((valor + limite) / (2 * limite)) * 100;
 }
 
 async function calcular() {
@@ -71,15 +105,10 @@ async function calcular() {
   let municipio = normalizarTexto(direccion);
   let codigo = municipio + "_" + tipo;
 
-  console.log("Código buscado:", codigo);
-
   try {
     const response = await fetch("datos_municipios.json");
     const data = await response.json();
 
-    console.log("Primer registro JSON:", data[0]);
-
-    // Buscar usando la clave correcta del JSON
     const registro = data.find(x => 
       normalizarTexto(x["codigo unico"]) === codigo
     );
@@ -91,8 +120,6 @@ async function calcular() {
     }
 
     const precioUsuario = precio / metros;
-
-    // Convertir a número el precio medio
     const precioMedio = parseFloat(registro["Precio m2"]);
 
     if (isNaN(precioMedio)) {
@@ -103,12 +130,27 @@ async function calcular() {
 
     const diferencia = ((precioUsuario - precioMedio) / precioMedio) * 100;
 
+    // Mostrar resultado
     document.getElementById("resultado").innerText =
       `Tu precio m²: ${precioUsuario.toFixed(2)} €/m²\n` +
       `Precio medio en la zona: ${precioMedio.toFixed(2)} €/m²\n` +
       `Desviación: ${diferencia.toFixed(2)}%\n\n` +
       `Superficie media en la zona: ${registro["superficie media"]} m²\n` +
       `Número de viviendas en el municipio: ${registro["VIVIENDAS"]}`;
+
+    // 🔥 Actualizar barra
+    const posicion = calcularPosicion(diferencia);
+    const marcador = document.getElementById("marcador");
+    marcador.style.left = posicion + "%";
+
+    // Cambiar color del marcador según desviación
+    if (Math.abs(diferencia) < 5) {
+      marcador.style.background = "#2ecc71"; // verde
+    } else if (Math.abs(diferencia) < 30) {
+      marcador.style.background = "#f1c40f"; // amarillo
+    } else {
+      marcador.style.background = "#e74c3c"; // rojo
+    }
 
   } catch (error) {
     console.error(error);
