@@ -68,10 +68,7 @@ async function calcular() {
     return;
   }
 
-  // Normalizar municipio
   let municipio = normalizarTexto(direccion);
-
-  // Construir código
   let codigo = municipio + "_" + tipo;
 
   console.log("Código buscado:", codigo);
@@ -82,9 +79,9 @@ async function calcular() {
 
     console.log("Primer registro JSON:", data[0]);
 
-    // Comparación robusta
+    // Buscar usando la clave correcta del JSON
     const registro = data.find(x => 
-      normalizarTexto(x.codigo_unico) === codigo
+      normalizarTexto(x["codigo unico"]) === codigo
     );
 
     if (!registro) {
@@ -95,14 +92,23 @@ async function calcular() {
 
     const precioUsuario = precio / metros;
 
-    const diferencia = ((precioUsuario - registro.precio_m2) / registro.precio_m2) * 100;
+    // Convertir a número el precio medio
+    const precioMedio = parseFloat(registro["Precio m2"]);
+
+    if (isNaN(precioMedio)) {
+      document.getElementById("resultado").innerText =
+        "No hay precio medio disponible para este municipio";
+      return;
+    }
+
+    const diferencia = ((precioUsuario - precioMedio) / precioMedio) * 100;
 
     document.getElementById("resultado").innerText =
       `Tu precio: ${precioUsuario.toFixed(2)} €/m²\n` +
-      `Precio medio: ${registro.precio_m2} €/m²\n` +
+      `Precio medio: ${precioMedio.toFixed(2)} €/m²\n` +
       `Diferencia: ${diferencia.toFixed(2)}%\n\n` +
-      `Superficie media: ${registro.superficie_media} m²\n` +
-      `Número de viviendas: ${registro.viviendas}`;
+      `Superficie media: ${registro["superficie media"]} m²\n` +
+      `Número de viviendas: ${registro["VIVIENDAS"]}`;
 
   } catch (error) {
     console.error(error);
