@@ -49,6 +49,14 @@
 <h3 id="resultado"></h3>
 
 <script>
+function normalizarTexto(texto) {
+  return texto
+    .trim()
+    .toUpperCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
 async function calcular() {
   const direccion = document.getElementById("direccion").value;
   const tipo = document.getElementById("tipo").value;
@@ -60,17 +68,24 @@ async function calcular() {
     return;
   }
 
-  // Convertimos municipio a formato del JSON
-  let municipio = direccion.trim().toUpperCase();
+  // Normalizar municipio
+  let municipio = normalizarTexto(direccion);
 
-  // Construimos código único
+  // Construir código
   let codigo = municipio + "_" + tipo;
 
+  console.log("Código buscado:", codigo);
+
   try {
-    const response = await fetch("csvjson.json");
+    const response = await fetch("./datos_municipios.json");
     const data = await response.json();
 
-    const registro = data.find(x => x.codigo_unico === codigo);
+    console.log("Primer registro JSON:", data[0]);
+
+    // Comparación robusta
+    const registro = data.find(x => 
+      normalizarTexto(x.codigo_unico) === codigo
+    );
 
     if (!registro) {
       document.getElementById("resultado").innerText =
@@ -90,6 +105,7 @@ async function calcular() {
       `Número de viviendas: ${registro.viviendas}`;
 
   } catch (error) {
+    console.error(error);
     document.getElementById("resultado").innerText =
       "Error cargando datos. Revisa el JSON.";
   }
