@@ -77,7 +77,7 @@ async function calcular() {
   console.log("Código buscado:", codigo);
 
   try {
-    const response = await fetch("./datos_municipios.json");
+    const response = await fetch("datos_municipios.json");
     const data = await response.json();
 
     console.log("Primer registro JSON:", data[0]);
