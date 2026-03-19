@@ -104,11 +104,11 @@ async function calcular() {
     const diferencia = ((precioUsuario - precioMedio) / precioMedio) * 100;
 
     document.getElementById("resultado").innerText =
-      `Tu precio: ${precioUsuario.toFixed(2)} €/m²\n` +
-      `Precio medio: ${precioMedio.toFixed(2)} €/m²\n` +
-      `Diferencia: ${diferencia.toFixed(2)}%\n\n` +
-      `Superficie media: ${registro["superficie media"]} m²\n` +
-      `Número de viviendas: ${registro["VIVIENDAS"]}`;
+      `Tu precio m²: ${precioUsuario.toFixed(2)} €/m²\n` +
+      `Precio medio en la zona: ${precioMedio.toFixed(2)} €/m²\n` +
+      `Desviación: ${diferencia.toFixed(2)}%\n\n` +
+      `Superficie media en la zona: ${registro["superficie media"]} m²\n` +
+      `Número de viviendas en el municipio: ${registro["VIVIENDAS"]}`;
 
   } catch (error) {
     console.error(error);
